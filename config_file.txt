@@ -1,0 +1,166 @@
+
+# ****************************************************
+#
+#     GAMMORA project - Inserm CRCT (UMR1037)
+#
+# ****************************************************
+# This configure file allows to generate a complete GATE macro
+# with VARIAN TrueBeam
+# Use: set ALL parameters after each =WORD= tag
+# Only the line following the =TAG= is read
+
+#----------------------------------------------------------------------------------------------------
+#                                                  GENERAL
+#----------------------------------------------------------------------------------------------------
+
+# Simulation Name
+# Set your job name prefix: string or "auto"
+=SIMULATION_NAME=
+auto
+
+# Visualization 0 = no ; 1 = yes ; 2 : yes (MLC view) ; "auto"
+=VISU=
+1
+
+# Visualization 0 = no ; 1 = yes (auto) ; file
+=PHYSICS=
+auto
+
+# Visualization 0 = no ; 1 = yes ;  "auto"
+=HEAD_SIMULATION=
+auto
+
+# Visualization 0 = no ; 1 = yes ;  "auto"
+=PATIENT_SIMULATION=
+auto
+
+# Visualization 0 = no ; 1 = yes ;  "auto" (not working yet)
+=TEST_SIMULATION=
+auto
+
+# Set "auto" or set a number of index. (equivalent to splitting)
+=INDEX=
+1
+
+# Set "auto" or "stat" or "dyn" (when stat if geometry (gantry or ml positions) varies linear interpolation is used)
+=SPLIT_TYPE=
+dyn
+
+#----------------------------------------------------------------------------------------------------
+#                                                  GEOMETRY
+#----------------------------------------------------------------------------------------------------
+
+# Set "auto" or set Gantry angle (in deg). For arcs, set start angle [0 - 360]
+=GANTRY=
+auto
+
+# Set "auto" or for arcs, set stop angle (in deg). X = static field  [0 - 360]
+=GANTRY_STOP=
+X
+
+# Set auto or for arcs, set direction. 0 clockwise. 1 counter clockwise
+=ROTATION_DIRECTION=
+auto
+
+# Set "auto" or set Collimator angle (in deg). For arcs, set start angle [-180 - 180]
+=COLLI=
+auto
+
+# Set "auto" or set X1 (mm). Must be < 210
+=X1=
+auto
+
+# Set "auto" or set X2 (mm). Must be < 210
+=X2=
+auto
+
+# Set "auto" or set Y1 (mm). Must be < 210
+=Y1=
+auto
+
+# Set "auto" or set Y2 (mm). Must be < 210
+=Y2=
+auto
+
+# Set 0 = no mlc ; "auto" ; ".mlc" file
+=MLC=
+auto
+
+# Set 0 = no mlc ; "auto" ; ".mlc" file (just read for simulation from scrath)
+=MLC_FILE=
+auto
+
+# Phantom or patient. 
+# Set 0 = no phantom/patient ; "auto" ; ".mac" file or ".mhd" file.
+# Ex. : waterBox800.mac ; dupont.mhd ;  0 for no phantom
+=PHANTOM=
+auto
+#phantom_interplay.mac
+#jdbfkjdzb.mac
+#auto
+#waterbox300.mac
+#auto
+
+
+#----------------------------------------------------------------------------------------------------
+#                                                  ACTOR
+#----------------------------------------------------------------------------------------------------
+
+# Set 0 = no phsp actor ; 1 = with phsp actor ; "auto" or set a ".mac" file
+# Ex. : waterActor.mac or portalActor.mac
+=PHSP_ACTOR=
+auto
+
+# Set 0 = no patient actor ; 1 = with patient actor ; "auto" or set a ".mac" file
+=PATIENT_ACTOR=
+auto
+dose_actor_octa_thin.mac
+#dose_actor_octa.mac
+#dose_abs_photon2.mac
+#201711674_actor.mac
+
+
+# Set "auto" or set x y z (mm) (must be float)
+# ex: 300.0 125.0 425.0 
+=PATIENT_ACTOR_SIZE=
+auto
+
+# Set "auto" or set x y z (voxels) (must be int)
+# ex: 300 150 450
+=PATIENT_ACTOR_RESOLUTION=
+auto
+
+#----------------------------------------------------------------------------------------------------
+#                                                  SOURCE
+#----------------------------------------------------------------------------------------------------
+
+# Set 0 = no source ; "auto" ; "iaea" (Varian-phsp file) ; "gaga" ; "root" , "npy"
+=SOURCE=
+auto
+
+# Set "auto" ; "6X" ; "10X"; "6FFF" ; "10FFF"
+=ENERGY=
+auto
+
+# Set "auto" or number of native particles to simulate (int > 100)
+=NB_PART=
+200
+
+# Set "auto" or recycling value (positive int)
+# Set the number of recyling of the reduced phase space
+=RECYCILNG=
+50
+
+#----------------------------------------------------------------------------------------------------
+#                                                  COMPUTING
+#---------------------------------------------------------------------------------------------------
+
+# EXECUTE ON CLUSTER
+# 0 : local simulations
+# 1 : SALLE DES POMMES and launch using CONDOR (not working)
+# 2 : old UPS cluster and launch using CONDOR (not working)
+# 3 : CALMIP computing center and launch using SLURM script
+# option 2 does not work until files are not present on old cluster
+=EXECUTE_ON_CLUSTER=
+0
+
