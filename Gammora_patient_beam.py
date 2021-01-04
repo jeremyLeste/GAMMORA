@@ -691,6 +691,7 @@ class GammoraPatientBeam(Gammora_beam.GammoraBeam):
 
             if found1 != True and found2 != True:
                 Gammora_print._title2('Couch Structure not found in Dicom RT Struct file -> Couch is not modelled ! ')
+                self._set_couch(False)
                 return
             else:
             

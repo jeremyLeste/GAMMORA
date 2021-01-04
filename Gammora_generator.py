@@ -874,10 +874,12 @@ class GammoraSimu():
                 for cpi in range(0,self.Beam._get_beam_nb_cpi()):
                     i = cpi % (number_of_phsp_file+1)
                     if self.Study._get_from_patient() == True and self.Beam._get_source_iaea() == True:
+
                         if primaries_per_simu >= data_phsp['nb_part_phsp'].loc[data_phsp['energy']==self.Beam._get_energy()].to_numpy()[i]:
                             Gammora_print._error_config('Number of Index', str(self.Beam._get_nb_index()), ['auto', 'at least ' + str(self.Beam._get_beam_nb_cpi()-1)])
-                            exit()        
-                        #raise ValueError
+                            exit()
+                        else:
+                            number_of_primaries=int(int(primaries_per_simu/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])        
 
                     elif self.Study._get_from_scratch() == True and self.Beam._get_source_iaea() == True:
                         nb_part_in_this_phsp=data_phsp['nb_part_phsp'].loc[data_phsp['energy']==self.Beam._get_energy()].to_numpy()[i]
@@ -885,12 +887,12 @@ class GammoraSimu():
                             Gammora_print._warning('Number of particule per Simu is too important', [])
                             Gammora_print._error_config('Number of particule per Simu is too important :', str(primaries_per_simu), ['Increase Number of Index', 'Define manually number of particle'])
                             exit()
-                            number_of_primaries=int(int(nb_part_in_this_phsp/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
+                            #number_of_primaries=int(int(nb_part_in_this_phsp/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
                         else: 
                             number_of_primaries=int(int(primaries_per_simu/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
                     else:
                         number_of_primaries=int(int(primaries_per_simu/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
-        
+
                     if cpi == self.Beam._get_beam_nb_cpi()-1:
                         file.write(str(int(number_of_primaries)))
                     else:
