@@ -126,12 +126,12 @@ int main(int argc, char **argv)
 
         pf =fopen("QLT_SUP.dat","w");
         pf2 =fopen("QLI_SUP.dat","w");
-        pf3 =fopen("QLT_Inf.dat","w");
-        pf4 =fopen("QLI_Inf.dat","w");
+        pf3 =fopen("QLT_INF.dat","w");
+        pf4 =fopen("QLI_INF.dat","w");
         pf5 =fopen("HLT_SUP.dat","w");
         pf6 =fopen("HLI_SUP.dat","w");
-        pf7 =fopen("HLT_Inf.dat","w");
-        pf8 =fopen("HLI_Inf.dat","w");
+        pf7 =fopen("HLT_INF.dat","w");
+        pf8 =fopen("HLI_INF.dat","w");
 
 
         fprintf(pf,"0 ");
@@ -306,12 +306,12 @@ int main(int argc, char **argv)
 
         pf =fopen("QLT_SUP180.dat","w");
         pf2 =fopen("QLI_SUP180.dat","w");
-        pf3 =fopen("QLT_Inf180.dat","w");
-        pf4 =fopen("QLI_Inf180.dat","w");
+        pf3 =fopen("QLT_INF180.dat","w");
+        pf4 =fopen("QLI_INF180.dat","w");
         pf5 =fopen("HLT_SUP180.dat","w");
         pf6 =fopen("HLI_SUP180.dat","w");
-        pf7 =fopen("HLT_Inf180.dat","w");
-        pf8 =fopen("HLI_Inf180.dat","w");
+        pf7 =fopen("HLT_INF180.dat","w");
+        pf8 =fopen("HLI_INF180.dat","w");
 
         fprintf(pf,"0 ");
         fprintf(pf2,"0 ");

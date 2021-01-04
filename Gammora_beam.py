@@ -1151,6 +1151,10 @@ class GammoraBeam():
     def _compute_mlc_position_fromC(self, file):
         root = os.getcwd()
         shutil.copyfile(root+'/utils/C/bin/makeMLC', root+'/makeMLC')
+
+        # used to fix permission errors with git
+        os.system('chmod 755 makeMLC')
+
         proc = subprocess.Popen(["./makeMLC", file])
         proc.wait()
 
