@@ -626,7 +626,7 @@ class GammoraPatientBeam(Gammora_beam.GammoraBeam):
     def  _get_size_from_rt_dose(self, patient):
         root = os.getcwd()
         try:
-            rt_dose_file=glob.glob(root+"/input/patient/"+patient._get_patient_id()+"/dicom/RD*")[0]
+            rt_dose_file=glob.glob(root+"/input/patient/"+self._get_study_input_name()+"/dicom/RD*")[0]
             rt_dose=dcm.read_file(rt_dose_file)
             rt_dose_array=rt_dose.pixel_array
             shape=[rt_dose_array.shape[2], rt_dose_array.shape[1], rt_dose_array.shape[0]]
@@ -652,7 +652,7 @@ class GammoraPatientBeam(Gammora_beam.GammoraBeam):
     def  _get_resolution_from_rt_dose(self, patient):
         root = os.getcwd()
         try:
-            rt_dose_file=glob.glob(root+"/input/patient/"+patient._get_patient_id()+"/dicom/RD*")[0]
+            rt_dose_file=glob.glob(root+"/input/patient/"+self._get_study_input_name()+"/dicom/RD*")[0]
             rt_dose=dcm.read_file(rt_dose_file)
             rt_dose_array=rt_dose.pixel_array
             rt_dose=dcm.read_file(rt_dose_file)
@@ -673,239 +673,247 @@ class GammoraPatientBeam(Gammora_beam.GammoraBeam):
     def _create_stl_couch(self, patient):
         root = os.getcwd()
         try:
-            rt_struct_file=glob.glob(root+"/input/patient/"+patient._get_patient_id()+"/dicom/RS*")[0]
+            rt_struct_file=glob.glob(root+"/input/patient/"+self._get_study_input_name()+"/dicom/RS*")[0]
             rs=dcm.read_file(rt_struct_file)
-            print
 
             #looking for couch structure in dicom rt struct
             i=0
             for st in rs.StructureSetROISequence:
+                found1 = False
+                found2 = False
                 if st.ROIName == "CouchSurface" or st.ROIName == "CouchSurface1" :
                     ind_ext = i
+                    found1 = True
                 if st.ROIName == "CouchInterior" or st.ROIName == "CouchInterior1":
                     ind_int = i
+                    found2 = True
                 i = i+1
+
+            if found1 != True and found2 != True:
+                Gammora_print._title2('Couch Structure not found in Dicom RT Struct file -> Couch is not modelled ! ')
+                return
+            else:
             
-            x_ext=[]
-            y_ext=[]
-            z_ext=[]
-            z_ext2=[]
-            x_int=[]
-            y_int=[]
-            z_int=[]
-            z_int2=[]  
-            
-            
-            
-            # compute STL file for Surface couch
-            # get x y and z off courch surface values from dicom rt struct
-            for i in range(0, len(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData), 3):
-                x_ext.append(float(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData[i]))
-            for i in range(1, len(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData), 3):
-                y_ext.append(float(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData[i]))
-            for i in range(2, len(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData), 3):
-                z_ext.append(float(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData[i]))
-            for i in range(2, len(rs.ROIContourSequence[ind_ext].ContourSequence[-1].ContourData), 3):
-                z_ext2.append(float(rs.ROIContourSequence[ind_ext].ContourSequence[-1].ContourData[i]))
-
-            y_center_ext = min(y_ext)+((max(y_ext)-min(y_ext))/2)
-            pts_up=[]
-
-            for i in range(len(x_ext)):
-                pt=[]
-                pt.append(x_ext[i])
-                pt.append(y_ext[i])
-                pt.append(z_ext[0])
-                pts_up.append(pt)
-
-            origin1=[0, y_center_ext, z_ext[0]]
-
-            stl_top=[]
-            for i in range(0, len(pts_up)):
-                f=[]
-                z=i+1 
-                if z > len(pts_up)-1: 
-                    f.append(pts_up[0])
-                else:
-                    f.append(pts_up[z])
-                f.append(pts_up[i])
-                f.append(origin1)
-                stl_top.append(f)
-
-            pts_down=[]
-            for i in range(len(x_ext)):
-                pt=[]
-                pt.append(x_ext[i])
-                pt.append(y_ext[i])
-                pt.append(z_ext2[0])
-                pts_down.append(pt)
+                x_ext=[]
+                y_ext=[]
+                z_ext=[]
+                z_ext2=[]
+                x_int=[]
+                y_int=[]
+                z_int=[]
+                z_int2=[]  
                 
-            origin2=[0, y_center_ext, z_ext2[0]] 
-
-            stl_bot=[]
-            for i in range(0, len(pts_down)):
-                f=[]
-                z=i+1
-                f.append(pts_down[i])
-                if z > len(pts_down)-1: 
-                    f.append(pts_down[0])
-                else:
-                    f.append(pts_down[z])
-                f.append(origin2)
-                stl_bot.append(f)
-
-            vertices = np.asarray([stl_top])
-            vertices.resize((len(stl_top),3,3))
-            vertices1 = np.asarray([stl_bot])
-            vertices1.resize((len(stl_bot),3,3))
-
-            pts_side=[]
-            stl_side=[]
-
-            for i in range(len(stl_top)):
-                fa=[]
-                fb=[]
-                fa.append(stl_top[i][0])    
-                if i == len(stl_top)-1:
-                        fa.append(stl_bot[0][0])
-                else:
-                    fa.append(stl_bot[i+1][0])
-                fa.append(stl_bot[i][0])
                 
-                fb.append(stl_top[i][0])
-                if i == len(stl_top)-1:
-                    fb.append(stl_top[0][0])
-                    fb.append(stl_bot[0][0])
-                            
-                else:
-                    fb.append(stl_top[i+1][0])
-                    fb.append(stl_bot[i+1][0])
+                
+                # compute STL file for Surface couch
+                # get x y and z off courch surface values from dicom rt struct
+                for i in range(0, len(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData), 3):
+                    x_ext.append(float(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData[i]))
+                for i in range(1, len(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData), 3):
+                    y_ext.append(float(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData[i]))
+                for i in range(2, len(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData), 3):
+                    z_ext.append(float(rs.ROIContourSequence[ind_ext].ContourSequence[0].ContourData[i]))
+                for i in range(2, len(rs.ROIContourSequence[ind_ext].ContourSequence[-1].ContourData), 3):
+                    z_ext2.append(float(rs.ROIContourSequence[ind_ext].ContourSequence[-1].ContourData[i]))
+
+                y_center_ext = min(y_ext)+((max(y_ext)-min(y_ext))/2)
+                pts_up=[]
+
+                for i in range(len(x_ext)):
+                    pt=[]
+                    pt.append(x_ext[i])
+                    pt.append(y_ext[i])
+                    pt.append(z_ext[0])
+                    pts_up.append(pt)
+
+                origin1=[0, y_center_ext, z_ext[0]]
+
+                stl_top=[]
+                for i in range(0, len(pts_up)):
+                    f=[]
+                    z=i+1 
+                    if z > len(pts_up)-1: 
+                        f.append(pts_up[0])
+                    else:
+                        f.append(pts_up[z])
+                    f.append(pts_up[i])
+                    f.append(origin1)
+                    stl_top.append(f)
+
+                pts_down=[]
+                for i in range(len(x_ext)):
+                    pt=[]
+                    pt.append(x_ext[i])
+                    pt.append(y_ext[i])
+                    pt.append(z_ext2[0])
+                    pts_down.append(pt)
                     
-                stl_side.append(fa)
-                stl_side.append(fb)     
-            vertice2=np.asarray(stl_side)
-            tot_len=vertices.shape[0]+vertices1.shape[0]+vertice2.shape[0]
-            vertex=np.zeros(tot_len)
-            vertex.resize((tot_len,3 ,3))
+                origin2=[0, y_center_ext, z_ext2[0]] 
 
-            for i, f in enumerate(vertices): 
-                vertex[i]=f
-            for i in range(len(vertices), len(vertices)+len(vertices1)):
-                vertex[i]=vertices1[i-len(vertices)]
-            for i in range((len(vertices)+len(vertices1)),tot_len):
-                vertex[i]=vertice2[i-(len(vertices)+len(vertices1))]
+                stl_bot=[]
+                for i in range(0, len(pts_down)):
+                    f=[]
+                    z=i+1
+                    f.append(pts_down[i])
+                    if z > len(pts_down)-1: 
+                        f.append(pts_down[0])
+                    else:
+                        f.append(pts_down[z])
+                    f.append(origin2)
+                    stl_bot.append(f)
 
-            couch_ext = mesh.Mesh(np.zeros(tot_len, dtype=mesh.Mesh.dtype))
-            for i, f in enumerate(vertex):
-                couch_ext.vectors[i]=f
-            couch_ext.save(root+'/temp/couch_ext.stl')
+                vertices = np.asarray([stl_top])
+                vertices.resize((len(stl_top),3,3))
+                vertices1 = np.asarray([stl_bot])
+                vertices1.resize((len(stl_bot),3,3))
 
+                pts_side=[]
+                stl_side=[]
 
-
-            # compute STL file for Interior couch
-            # get x y and z off courch interior values from dicom rt struct
-            for i in range(0, len(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData), 3):
-                x_int.append(float(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData[i]))
-            for i in range(1, len(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData), 3):
-                y_int.append(float(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData[i]))
-            for i in range(2, len(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData), 3):
-                z_int.append(float(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData[i]))
-            for i in range(2, len(rs.ROIContourSequence[ind_int].ContourSequence[-1].ContourData), 3):
-                z_int2.append(float(rs.ROIContourSequence[ind_int].ContourSequence[-1].ContourData[i]))
-
-            y_center_int = min(y_int)+((max(y_int)-min(y_int))/2)
-            pts_up_int=[]
-
-            for i in range(len(x_int)):
-                pt=[]
-                pt.append(x_int[i])
-                pt.append(y_int[i])
-                pt.append(z_int[0])
-                pts_up_int.append(pt)
-            
-            origin1_int=[0, y_center_int, z_int[0]]
-
-            stl_top_int=[]
-            for i in range(0, len(pts_up_int)):
-                f=[]
-                z=i+1 
-                if z > len(pts_up_int)-1: 
-                    f.append(pts_up_int[0])
-                else:
-                    f.append(pts_up_int[z])
-                f.append(pts_up_int[i])
-                f.append(origin1_int)
-                stl_top_int.append(f)
-
-            pts_down_int=[]
-            for i in range(len(x_int)):
-                pt=[]
-                pt.append(x_int[i])
-                pt.append(y_int[i])
-                pt.append(z_int2[0])
-                pts_down_int.append(pt)
-                
-            origin2_int=[0, y_center_int, z_int2[0]] 
-
-            stl_bot_int=[]
-            for i in range(0, len(pts_down_int)):
-                f=[]
-                z=i+1
-                f.append(pts_down_int[i])
-                if z > len(pts_down_int)-1: 
-                    f.append(pts_down_int[0])
-                else:
-                    f.append(pts_down_int[z])
-                f.append(origin2_int)
-                stl_bot_int.append(f)
-
-            vertices_int = np.asarray([stl_top_int])
-            vertices_int.resize((len(stl_top_int),3,3))
-            vertices1_int = np.asarray([stl_bot_int])
-            vertices1_int.resize((len(stl_bot_int),3,3))
-
-            pts_side_int=[]
-            stl_side_int=[]
-
-            for i in range(len(stl_top_int)):
-                fa=[]
-                fb=[]
-                fa.append(stl_top_int[i][0])    
-                if i == len(stl_top_int)-1:
-                        fa.append(stl_bot_int[0][0])
-                else:
-                    fa.append(stl_bot_int[i+1][0])
-                fa.append(stl_bot_int[i][0])
-                
-                fb.append(stl_top_int[i][0])
-                if i == len(stl_top_int)-1:
-                    fb.append(stl_top_int[0][0])
-                    fb.append(stl_bot_int[0][0])
-                            
-                else:
-                    fb.append(stl_top_int[i+1][0])
-                    fb.append(stl_bot_int[i+1][0])
+                for i in range(len(stl_top)):
+                    fa=[]
+                    fb=[]
+                    fa.append(stl_top[i][0])    
+                    if i == len(stl_top)-1:
+                            fa.append(stl_bot[0][0])
+                    else:
+                        fa.append(stl_bot[i+1][0])
+                    fa.append(stl_bot[i][0])
                     
-                stl_side_int.append(fa)
-                stl_side_int.append(fb)
+                    fb.append(stl_top[i][0])
+                    if i == len(stl_top)-1:
+                        fb.append(stl_top[0][0])
+                        fb.append(stl_bot[0][0])
+                                
+                    else:
+                        fb.append(stl_top[i+1][0])
+                        fb.append(stl_bot[i+1][0])
+                        
+                    stl_side.append(fa)
+                    stl_side.append(fb)     
+                vertice2=np.asarray(stl_side)
+                tot_len=vertices.shape[0]+vertices1.shape[0]+vertice2.shape[0]
+                vertex=np.zeros(tot_len)
+                vertex.resize((tot_len,3 ,3))
 
-            vertice2_int=np.asarray(stl_side_int)
-            tot_len_int=vertices_int.shape[0]+vertices1_int.shape[0]+vertice2_int.shape[0]
-            vertex_int=np.zeros(tot_len_int)
-            vertex_int.resize((tot_len_int,3 ,3))
+                for i, f in enumerate(vertices): 
+                    vertex[i]=f
+                for i in range(len(vertices), len(vertices)+len(vertices1)):
+                    vertex[i]=vertices1[i-len(vertices)]
+                for i in range((len(vertices)+len(vertices1)),tot_len):
+                    vertex[i]=vertice2[i-(len(vertices)+len(vertices1))]
 
-            for i, f in enumerate(vertices_int): 
-                vertex_int[i]=f
-            for i in range(len(vertices_int), len(vertices_int)+len(vertices1_int)):
-                vertex_int[i]=vertices1_int[i-len(vertices_int)]
-            for i in range((len(vertices_int)+len(vertices1_int)),tot_len_int):
-                vertex_int[i]=vertice2_int[i-(len(vertices_int)+len(vertices1_int))]
+                couch_ext = mesh.Mesh(np.zeros(tot_len, dtype=mesh.Mesh.dtype))
+                for i, f in enumerate(vertex):
+                    couch_ext.vectors[i]=f
+                couch_ext.save(root+'/temp/couch_ext.stl')
 
-            couch_int = mesh.Mesh(np.zeros(tot_len_int, dtype=mesh.Mesh.dtype))
-            for i, f in enumerate(vertex_int):
-                couch_int.vectors[i]=f
-            couch_int.save(root+'/temp/couch_int.stl')
-            self._set_couch(True)
+
+
+                # compute STL file for Interior couch
+                # get x y and z off courch interior values from dicom rt struct
+                for i in range(0, len(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData), 3):
+                    x_int.append(float(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData[i]))
+                for i in range(1, len(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData), 3):
+                    y_int.append(float(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData[i]))
+                for i in range(2, len(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData), 3):
+                    z_int.append(float(rs.ROIContourSequence[ind_int].ContourSequence[0].ContourData[i]))
+                for i in range(2, len(rs.ROIContourSequence[ind_int].ContourSequence[-1].ContourData), 3):
+                    z_int2.append(float(rs.ROIContourSequence[ind_int].ContourSequence[-1].ContourData[i]))
+
+                y_center_int = min(y_int)+((max(y_int)-min(y_int))/2)
+                pts_up_int=[]
+
+                for i in range(len(x_int)):
+                    pt=[]
+                    pt.append(x_int[i])
+                    pt.append(y_int[i])
+                    pt.append(z_int[0])
+                    pts_up_int.append(pt)
+                
+                origin1_int=[0, y_center_int, z_int[0]]
+
+                stl_top_int=[]
+                for i in range(0, len(pts_up_int)):
+                    f=[]
+                    z=i+1 
+                    if z > len(pts_up_int)-1: 
+                        f.append(pts_up_int[0])
+                    else:
+                        f.append(pts_up_int[z])
+                    f.append(pts_up_int[i])
+                    f.append(origin1_int)
+                    stl_top_int.append(f)
+
+                pts_down_int=[]
+                for i in range(len(x_int)):
+                    pt=[]
+                    pt.append(x_int[i])
+                    pt.append(y_int[i])
+                    pt.append(z_int2[0])
+                    pts_down_int.append(pt)
+                    
+                origin2_int=[0, y_center_int, z_int2[0]] 
+
+                stl_bot_int=[]
+                for i in range(0, len(pts_down_int)):
+                    f=[]
+                    z=i+1
+                    f.append(pts_down_int[i])
+                    if z > len(pts_down_int)-1: 
+                        f.append(pts_down_int[0])
+                    else:
+                        f.append(pts_down_int[z])
+                    f.append(origin2_int)
+                    stl_bot_int.append(f)
+
+                vertices_int = np.asarray([stl_top_int])
+                vertices_int.resize((len(stl_top_int),3,3))
+                vertices1_int = np.asarray([stl_bot_int])
+                vertices1_int.resize((len(stl_bot_int),3,3))
+
+                pts_side_int=[]
+                stl_side_int=[]
+
+                for i in range(len(stl_top_int)):
+                    fa=[]
+                    fb=[]
+                    fa.append(stl_top_int[i][0])    
+                    if i == len(stl_top_int)-1:
+                            fa.append(stl_bot_int[0][0])
+                    else:
+                        fa.append(stl_bot_int[i+1][0])
+                    fa.append(stl_bot_int[i][0])
+                    
+                    fb.append(stl_top_int[i][0])
+                    if i == len(stl_top_int)-1:
+                        fb.append(stl_top_int[0][0])
+                        fb.append(stl_bot_int[0][0])
+                                
+                    else:
+                        fb.append(stl_top_int[i+1][0])
+                        fb.append(stl_bot_int[i+1][0])
+                        
+                    stl_side_int.append(fa)
+                    stl_side_int.append(fb)
+
+                vertice2_int=np.asarray(stl_side_int)
+                tot_len_int=vertices_int.shape[0]+vertices1_int.shape[0]+vertice2_int.shape[0]
+                vertex_int=np.zeros(tot_len_int)
+                vertex_int.resize((tot_len_int,3 ,3))
+
+                for i, f in enumerate(vertices_int): 
+                    vertex_int[i]=f
+                for i in range(len(vertices_int), len(vertices_int)+len(vertices1_int)):
+                    vertex_int[i]=vertices1_int[i-len(vertices_int)]
+                for i in range((len(vertices_int)+len(vertices1_int)),tot_len_int):
+                    vertex_int[i]=vertice2_int[i-(len(vertices_int)+len(vertices1_int))]
+
+                couch_int = mesh.Mesh(np.zeros(tot_len_int, dtype=mesh.Mesh.dtype))
+                for i, f in enumerate(vertex_int):
+                    couch_int.vectors[i]=f
+                couch_int.save(root+'/temp/couch_int.stl')
+                self._set_couch(True)
 
         except IndexError:
             self._set_couch(False)
