@@ -782,7 +782,11 @@ class GammoraSimu():
             root = os.getcwd()
             shutil.copyfile(root+'/utils/source/gaga/'+self.Beam._get_energy()+'.json', data_directory+'/'+self.Beam._get_energy()+'.json')
             shutil.copyfile(root+'/utils/source/gaga/'+self.Beam._get_energy()+'.pt', data_directory+'/'+self.Beam._get_energy()+'.pt')
-            nb_primaries=int((self.Beam._get_gaga_nb_part()/self.Beam._get_nb_index())*self.Beam._get_dose_rate()[cpi])
+            if self._get_split_type() == 'stat':
+                nb_primaries=int((self.Beam._get_gaga_nb_part()/self.Beam._get_nb_index())*self.Beam._get_dose_rate()[cpi])
+            #elif self._get_split_type() == 'dyn':
+            #    if self._get_nb
+            #    nb_primaries
             #print(self._get_gaga_nb_part()/self._get_nb_index())
             #print(self._get_dose_rate()[cpi])
 
@@ -804,8 +808,11 @@ class GammoraSimu():
                 source8='/gate/source/MyBeam/ignoreWeight true'
                 generator='/gate/random/setEngineName MersenneTwister'
                 seed='/gate/random/setEngineSeed auto'
-                part='/gate/application/setTotalNumberOfPrimaries '+str(nb_primaries)
+                if self._get_split_type() == 'stat':
+                    part='/gate/application/setTotalNumberOfPrimaries '+str(nb_primaries)
+    
                 if self._get_split_type() == 'dyn':
+                    part='/gate/application/readNumberOfPrimariesInAFile '+exec_dir+'/primary.dat'
                     line='/gate/application/readTimeSlicesIn '+exec_dir+'/myTime.timeslices'
                 
                 file.write("\n"+source1+"\n")
@@ -831,7 +838,14 @@ class GammoraSimu():
         if self.Beam._get_manual_nb_part() == True:
 
             data_phsp=pd.read_csv(root+'/utils/source/data_varian_phsp.csv')
-            total_number_of_primaries=self.Beam._get_iaea_nb_part()
+
+            if self.Beam._get_source_iaea() == True:
+                print("ccc")
+                total_number_of_primaries=self.Beam._get_iaea_nb_part()
+            if self.Beam._get_source_gaga() == True:
+                total_number_of_primaries=self.Beam._get_gaga_nb_part()
+                print(total_number_of_primaries)
+
             number_of_phsp_file=data_phsp['index'].loc[data_phsp['energy']==self.Beam._get_energy()].to_numpy()[-1]
             primaries_per_simu=total_number_of_primaries/self.Beam._get_nb_index()
 
@@ -851,11 +865,12 @@ class GammoraSimu():
                             #Gammora_print._warning('Number of particule per Simu is too important')
                             #Gammora_print._error_config('Number of particule per Simu is too important', str(self.Beam._get_nb_index()), ['Increase Number of Index', 'Define manually number of particule'])
                             number_of_primaries=int(int(nb_part_in_this_phsp/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
-                        else: 
+                        else:
                             number_of_primaries=int(int(primaries_per_simu/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
                     else:
+                        print("CACA")
                         number_of_primaries=int(int(primaries_per_simu/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
-        
+                        print(number_of_primaries)
                     if cpi == self.Beam._get_beam_nb_cpi()-1:
                         file.write(str(int(number_of_primaries)))
                     else:
@@ -1327,6 +1342,8 @@ class GammoraPatientSimu(GammoraSimu):
                         if i == 0:
                             self._create_primary_file(self._get_phsp_data_dir())
                     if self.Beam._get_source_gaga() == True:
+                        if i == 0:
+                            self._create_primary_file(self._get_phsp_data_dir())
                         self._add_gaga_phase_space_source(i, mac_cpi+'/main.mac', self._get_phsp_data_dir(), exec_dir)
 
 # + Start Command
@@ -1797,6 +1814,8 @@ class GammoraManualSimu(GammoraSimu):
                         if i == 0:
                             self._create_primary_file(self._get_phsp_data_dir())
                     if self._get_source_gaga() == True:
+                        if i == 0:
+                            self._create_primary_file(self._get_phsp_data_dir())
                         self._add_gaga_phase_space_source(i, mac_cpi+'/main.mac', self._get_phsp_data_dir(), exec_dir)
 
                 self._decorate(mac_cpi+'/main.mac', 'Start Gate')
