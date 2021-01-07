@@ -1650,7 +1650,7 @@ class GammoraPatientSimu(GammoraSimu):
                     os.mkdir(data_cpi)
                     os.mkdir(mac_cpi)
                     if self._get_local() == True:
-                        #####os.mkdir(self._get_clinic_dir()+'/output/'+str(i))
+                        os.mkdir(self._get_clinic_dir()+'/output/'+str(i))
                         pass
                 except FileExistsError:
                     pass
