@@ -538,8 +538,8 @@ class GammoraSimu():
                 #print(pos)
                 fx1.write(str(float(i)) + ' ' + str(pos[0][2]) + ' ' + '0 0 1 ' + str(pos[0][0]) + ' ' + str(pos[0][1]) + ' 0.0' )
                 fx2.write(str(float(i)) + ' ' + str(pos[1][2]) + ' ' + '0 0 1 ' + str(pos[1][0]) + ' ' + str(pos[1][1]) + ' 0.0' )
-                fy1.write(str(float(i)) + ' ' + str(pos[2][2]) + ' ' + '0 0 1 ' + '0.0 ' + str(pos[2][1]) + ' ' + str(pos[2][0])) #**
-                fy2.write(str(float(i)) + ' ' + str(pos[3][2]) + ' ' + '0 0 1 ' + '0.0 ' + str(pos[3][1]) + ' ' + str(pos[3][0])) #**
+                fy1.write(str(float(i)) + ' ' + str(pos[2][2]) + ' ' + '1 0 0 ' + '0.0 ' + str(pos[2][1]) + ' ' + str(pos[2][0])) #**
+                fy2.write(str(float(i)) + ' ' + str(pos[3][2]) + ' ' + '1 0 0 ' + '0.0 ' + str(pos[3][1]) + ' ' + str(pos[3][0])) #**
                 fx1.write("\n")
                 fx2.write("\n")
                 fy1.write("\n")
