@@ -784,11 +784,10 @@ class GammoraSimu():
             shutil.copyfile(root+'/utils/source/gaga/'+self.Beam._get_energy()+'.pt', data_directory+'/'+self.Beam._get_energy()+'.pt')
             if self._get_split_type() == 'stat':
                 nb_primaries=int((self.Beam._get_gaga_nb_part()/self.Beam._get_nb_index())*self.Beam._get_dose_rate()[cpi])
-            #elif self._get_split_type() == 'dyn':
-            #    if self._get_nb
-            #    nb_primaries
-            #print(self._get_gaga_nb_part()/self._get_nb_index())
-            #print(self._get_dose_rate()[cpi])
+
+            elif self._get_split_type() == 'dyn':   # for the moment -> to fix nb part must be fix with primary.dat file (not working at the moment with gaga)
+                nb_primaries=int(self.Beam._get_gaga_nb_part()/self.Beam._get_nb_index())
+                #print(self._get_dose_rate()[cpi])
 
             if self._get_local() == True:
                 self._set_phsp_dir1(data_directory)
@@ -812,7 +811,8 @@ class GammoraSimu():
                     part='/gate/application/setTotalNumberOfPrimaries '+str(nb_primaries)
     
                 if self._get_split_type() == 'dyn':
-                    part='/gate/application/readNumberOfPrimariesInAFile '+exec_dir+'/primary.dat'
+                    part='/gate/application/setTotalNumberOfPrimaries '+str(nb_primaries)
+                    #part='/gate/application/readNumberOfPrimariesInAFile '+exec_dir+'/primary.dat' # To fix (gaga do not work with read in a file, necessary to modulate dose rate)
                     line='/gate/application/readTimeSlicesIn '+exec_dir+'/myTime.timeslices'
                 
                 file.write("\n"+source1+"\n")
@@ -917,21 +917,23 @@ class GammoraSimu():
         if self._get_calmip() == True:
             dir_phsp = self._get_phsp_dir1()+'/'+self._get_simu_name()
         if self._get_local() == True:
-            dir_phsp = data_directory
-            
-        phsp_name = str(cpi)+'-'+self._get_simu_name()+'.IAEAphsp'
-         #number_of_primaries=N*recycling
+            dir_phsp = root+'/output/'+self.Study._get_study_name()+'/'+self._get_simu_name()+'/phsp/output/'+str(cpi)
+        #phsp_name = str(cpi)+'-'+self._get_simu_name()+'.IAEAphsp'
+        
+        #number_of_primaries=N*recycling
         with open(mac_directory, 'a') as file:                 
             source1='/gate/source/addSource MyBeam phaseSpace'
             file.write("\n"+source1)
         with open(mac_directory, 'a') as file:
             if self._get_calmip() == True:
                 if self._get_split_type() == 'stat':
-                    source2='/gate/source/MyBeam/addPhaseSpaceFile '+'/tmpdir/' +self._get_user()+'/input/'+self.Study._get_study_name()+'/'+self._get_simu_name()+'/phsp/output/'+str(cpi)+'/myIAEA.IAEAphsp'
+                    #source2='/gate/source/MyBeam/addPhaseSpaceFile '+'/tmpdir/' +self._get_user()+'/input/'+self.Study._get_study_name()+'/'+self._get_simu_name()+'/phsp/output/'+str(cpi)+'/myIAEA.IAEAphsp'
+                    source2='/gate/source/MyBeam/addPhaseSpaceFile '+'/tmpdir/' +self._get_user()+'/input/'+self.Study._get_study_name()+'/'+self._get_simu_name()+'/phsp/output/'+str(cpi)+'/myIAEA.root'
                 if self._get_split_type() == 'dyn':
                     source2='/gate/source/MyBeam/addPhaseSpaceFile '+'/tmpdir/' +self._get_user()+'/input/'+self.Study._get_study_name()+'/'+self._get_simu_name()+'/phsp/output/'+str(cpi)+'/myIAEA.root'
             if self._get_local() == True:
-                source2='/gate/source/MyBeam/addPhaseSpaceFile '+dir_phsp+'/'+phsp_name
+                #source2='/gate/source/MyBeam/addPhaseSpaceFile '+dir_phsp+'/'+phsp_name
+                source2='/gate/source/MyBeam/addPhaseSpaceFile '+dir_phsp+'/myIAEA.root'
             file.write("\n"+source2)
         with open(mac_directory, 'a') as file:       
             primaries='/gate/application/setTotalNumberOfPrimaries NB_PRIM'          
