@@ -840,11 +840,9 @@ class GammoraSimu():
             data_phsp=pd.read_csv(root+'/utils/source/data_varian_phsp.csv')
 
             if self.Beam._get_source_iaea() == True:
-                print("ccc")
                 total_number_of_primaries=self.Beam._get_iaea_nb_part()
             if self.Beam._get_source_gaga() == True:
                 total_number_of_primaries=self.Beam._get_gaga_nb_part()
-                print(total_number_of_primaries)
 
             number_of_phsp_file=data_phsp['index'].loc[data_phsp['energy']==self.Beam._get_energy()].to_numpy()[-1]
             primaries_per_simu=total_number_of_primaries/self.Beam._get_nb_index()
@@ -868,9 +866,7 @@ class GammoraSimu():
                         else:
                             number_of_primaries=int(int(primaries_per_simu/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
                     else:
-                        print("CACA")
                         number_of_primaries=int(int(primaries_per_simu/self.Beam._get_beam_nb_cpi())*self.Beam._get_dose_rate()[cpi])
-                        print(number_of_primaries)
                     if cpi == self.Beam._get_beam_nb_cpi()-1:
                         file.write(str(int(number_of_primaries)))
                     else:
@@ -1095,12 +1091,18 @@ class GammoraSimu():
 
     def _create_macros_set_nb_part_reduced_from_root(self, directory, the_dir):
         root = os.getcwd()
-        shutil.copyfile(root+'/utils/template/Xset_nb_part_reduced_phsp_from_root.bashX', directory+'/set_nb_reducued_phsp.bash')
+
+        if self._get_calmip() == True:
+            shutil.copyfile(root+'/utils/template/Xset_nb_part_reduced_phsp_from_root_calmip.bashX', directory+'/set_nb_reducued_phsp.bash')
+        if self._get_local() == True:
+            shutil.copyfile(root+'/utils/template/Xset_nb_part_reduced_phsp_from_root_local.bashX', directory+'/set_nb_reducued_phsp.bash')
+
         shutil.copyfile(root+'/utils/source/read_root.py', directory+'/read_root.py')
         file=fileinput.FileInput(directory+'/set_nb_reducued_phsp.bash', inplace=1)
         for line in file:
             line=line.replace("ReCyCl", str(self.Beam._get_recycling()))
             line=line.replace("the_dir", the_dir)
+            line=line.replace("Nsimu", str(self.Beam._get_nb_index()))
             print(line)
 
 
@@ -1669,7 +1671,7 @@ class GammoraPatientSimu(GammoraSimu):
             if self._get_calmip() == True:
                 self._create_launcher_calmip(self._get_clinic_dir(), 'clinic')
 
-            self._create_macros_set_nb_part_reduced(self._get_clinic_dir(), self._get_input_dir())
+            self._create_macros_set_nb_part_reduced_from_root(self._get_clinic_dir(), self._get_input_dir())
 
             os.remove(self._get_clinic_mac_dir()+'/main.mac')
 
@@ -1915,7 +1917,7 @@ class GammoraManualSimu(GammoraSimu):
             if self._get_calmip() == True:
                 self._create_launcher_calmip(self._get_clinic_dir(), 'clinic')
 
-            self._create_macros_set_nb_part_reduced(self._get_clinic_dir(), self._get_input_dir())
+            self._create_macros_set_nb_part_reduced_from_root(self._get_clinic_dir(), self._get_input_dir())
         
             os.remove(self._get_clinic_mac_dir()+'/main.mac')
             print("")
@@ -2135,7 +2137,7 @@ class GammoraManualSimu(GammoraSimu):
             if self._get_calmip() == True:
                 self._create_launcher_calmip(self._get_clinic_dir(), 'clinic')
 
-            self._create_macros_set_nb_part_reduced(self._get_clinic_dir(), self._get_input_dir())
+            self._create_macros_set_nb_part_reduced_from_root(self._get_clinic_dir(), self._get_input_dir())
         
             os.remove(self._get_clinic_mac_dir()+'/main.mac')
         
