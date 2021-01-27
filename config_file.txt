@@ -25,12 +25,12 @@
 # Simulation Name
 # Set your job name prefix: string or "auto" (if auto, simulation name will be the study name)
 =SIMULATION_NAME=
-myFirstSimu
+test_MrGAMMORA
 
 # Visualization. Choose between:
 # 0 = no ; 1 = yes ; 2 : yes with MLC view ; "auto"
 =VISU=
-1
+auto
 
 # Physics list. Choose: 
 # 0 = no physics list inserted in the macros
@@ -78,7 +78,7 @@ auto
 # Gantry stop: choose X for static field. 
 # For arcs, set the stop angle (float value in deg)  [0 - 360] ; auto
 =GANTRY_STOP=
-X
+auto
 
 # Set rotation direction for arcs. 0 clockwise. 1 counter clockwise ; auto
 # Tag without consequences on the results except if the target moves
@@ -116,6 +116,20 @@ auto
 # Set auto for 'patient study type' to use MLC leaves position from the DICOM RT plan
 # Under construction for manual mode: "myownMLCposition.mlc" file, must be in /utils/mlc
 =MLC_FILE=
+auto
+
+# APPLICATOR (read only if electron beam)
+# Candidates are : A6 A10 A15 A20
+# not read if photons
+=APPLICATOR=
+auto
+
+# INSERT (rread only if electron beam).
+# Candidates are : circle 'X'x'Y' (ex. square 10 10) or circle D (circle 10)
+# With X, Y and D respectively X, Y  and diameter (if circular) aperture in cm
+# Personal designed insert: myInsert.stl
+# not read if photons
+=INSERT=
 auto
 
 # Phantom or patient. 
@@ -172,15 +186,15 @@ auto
 # sources are in utils/source/
 # if the user has access to myVarian IAEAphsp v2 files, place them in /utils/source/ 
 =SOURCE=
-auto
+gaga
 
 # Set "auto" ; "6X" ; "10X"; "6FFF" ; "10FFF"
 =ENERGY=
-6X
+auto
 
 # Set "auto" or total number of native particles to simulate 
 =NB_PART=
-200
+50000
 
 # Set "auto" or recycling value (positive int)
 # Set the number of recyling for patient simulation

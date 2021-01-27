@@ -54,9 +54,19 @@ class GammoraBeam():
             print("ERROR: Visualization mode must 1 or 2")
             print('!!!!!!!!!!!!!!!!!')
             raise ValueError
-    
+        
     def _get_visualization_mode(self):
         return(self.VisualizationMode)
+
+
+    def _set_radiation_type(self, a):
+        if a == '6X' or a == '10X' or a == '6FFF' or a == '10FFF':
+            self.RadiationType = 'photon'
+        elif a == '6E' or a == '9E' or a == '12E' or a == '18E':
+            self.RadiationType = 'electron'
+        
+    def _get_radiation_type(self):
+        return(self.RadiationType)
 
     def _set_material(self, a):
         if type(a) != bool:
@@ -399,6 +409,47 @@ class GammoraBeam():
     def _get_patient_ct_name(self):
         return(self.PatientCTName)
 
+    def _set_applicator(self, a):
+        if type(a) != str:
+            print('!!!!!!!!!!!!!!!!!')
+            print("ERROR: Set Applicator must be type of str")
+            print('!!!!!!!!!!!!!!!!!')
+            raise TypeError
+        self.Applicator = a
+
+    def _get_applicator(self):
+        return(self.Applicator)
+
+    def _get_insert_type(self):
+        return(self.InsertType)
+    
+    def _set_insert_type(self, a):
+        if type(a) != str:
+            print('!!!!!!!!!!!!!!!!!')
+            print("ERROR: Set Insert Type must be type of str")
+            print('!!!!!!!!!!!!!!!!!')
+            raise TypeError
+        self.InsertType = a
+
+    def _get_insert_size(self):
+        return(self.InsertSize)
+    
+    def _set_insert_size(self, a):
+        if self._get_insert_type() == "square":
+            if type(a) != list:
+                print('!!!!!!!!!!!!!!!!!')
+                print("ERROR: Set Insert Size for 'square' must be list of two floats")
+                print('!!!!!!!!!!!!!!!!!')
+                raise TypeError
+        if self._get_insert_type() == "circle":
+            if type(a) != float:
+                print('!!!!!!!!!!!!!!!!!')
+                print("ERROR: Set Insert Size for 'circle' type must one foat")
+                print('!!!!!!!!!!!!!!!!!')
+                raise TypeError
+        self.InsertSize = a
+
+ 
     def _set_phantom_name(self, a):
         if type(a) != str:
             print('!!!!!!!!!!!!!!!!!')

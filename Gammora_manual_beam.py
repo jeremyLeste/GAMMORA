@@ -69,6 +69,8 @@ class GammoraManualBeam(Gammora_beam.GammoraBeam):
         config_default_scratch['SOURCE_IAEA']=True
         config_default_scratch['NB_PART']=1000000000
         config_default_scratch['RECYCLING']=100
+        config_default_scratch['APPLICATOR']='A10'
+        config_default_scratch['INSERT']='square 10 10'
 
         config_default_scratch['CALMIP_USER']='leste'
         config_default_scratch['AUTO_SENDING']=False
@@ -96,6 +98,9 @@ class GammoraManualBeam(Gammora_beam.GammoraBeam):
 # Path
         self._set_local_output_dir(root+'/output/'+self._get_beam_name())
 
+# + Radiation type 
+        self._set_radiation_type(config['ENERGY'])
+        Gammora_print._title2("Radiation Type : " + str(self._get_radiation_type()))
 
 # + Material
         self._set_material(True)
@@ -221,6 +226,7 @@ class GammoraManualBeam(Gammora_beam.GammoraBeam):
             else:
                 self._set_gantry_angle_start(float(config['GANTRY']))
 
+            
             if config['GANTRY_STOP'] == 'auto' :
                 self._set_gantry_angle_stop((config_default_scratch['GANTRY_STOP']))           
             else:
@@ -274,78 +280,136 @@ class GammoraManualBeam(Gammora_beam.GammoraBeam):
                 self._set_colli_angle(colli)
             
             Gammora_print._title2("Colli Angle : " + str(self._get_colli_angle()[0])+ "°")
-# ++ Jaws
-# +++ X1
-            if config['X1'] == 'auto':
-                if self._get_split_type() == 'stat': 
-                    x1=np.repeat(float(config_default_scratch['X1']), self._get_nb_index()).tolist()
-                    self._set_x1(x1)
-                if self._get_split_type() == 'dyn':
-                    x1=np.repeat(float(config_default_scratch['X1']), self._get_beam_nb_cpi()).tolist()
-                    self._set_x1(x1)
 
-            else:
-                if self._get_split_type() == 'stat':
-                    x1=np.repeat(float(config['X1']), self._get_nb_index()).tolist()
-                    self._set_x1(x1)
-                if self._get_split_type() == 'dyn':
-                    x1=np.repeat(float(config['X1']), self._get_beam_nb_cpi()).tolist()
-                    self._set_x1(x1)
-            
-            Gammora_print._title2("X1 Position : " + str(self._get_x1()[0]) + " mm")
-# +++ X2           
-            if config['X2'] == 'auto': 
-                if self._get_split_type() == 'stat':
-                    x2=np.repeat(float(config_default_scratch['X2']), self._get_nb_index()).tolist()
-                    self._set_x2(x2)  
-                if self._get_split_type() == 'dyn':
-                    x2=np.repeat(float(config_default_scratch['X2']), self._get_beam_nb_cpi()).tolist()
-                    self._set_x2(x2)  
-                                       
-            else:
-                if self._get_split_type() == 'stat':
-                    x2=np.repeat(float(config['X2']), self._get_nb_index()).tolist()
-                    self._set_x2(x2)
-                if self._get_split_type() == 'dyn':
-                    x2=np.repeat(float(config['X2']), self._get_nb_index()).tolist()
-                    self._set_x2(x2)
-            
-            Gammora_print._title2("X2 Position : "+ str(self._get_x2()[0])+ " mm")
-# +++ Y1           
-            if config['Y1'] == 'auto': 
-                if self._get_split_type() == 'stat':
-                    y1=np.repeat(float(config_default_scratch['Y1']), self._get_nb_index()).tolist()
-                    self._set_y1(y1)  
-                if self._get_split_type() == 'dyn':
-                    y1=np.repeat(float(config_default_scratch['Y1']), self._get_beam_nb_cpi()).tolist()
-                    self._set_y1(y1)                         
-            else:
-                if self._get_split_type() == 'stat':
-                    y1=np.repeat(float(config['Y1']), self._get_nb_index()).tolist()
-                    self._set_y1(y1)
-                if self._get_split_type() == 'dyn':
-                    y1=np.repeat(float(config['Y1']), self._get_beam_nb_cpi()).tolist()
-                    self._set_y1(y1)
-            
-            Gammora_print._title2("Y1 Position : "+ str(self._get_y1()[0])+ " mm")
-# +++ Y2        
-            if config['Y2'] == 'auto': 
-                if self._get_split_type() == 'stat':
-                    y2=np.repeat(float(config_default_scratch['Y2']), self._get_nb_index()).tolist()
-                    self._set_y2(y2)
-                if self._get_split_type() == 'dyn':
-                    y2=np.repeat(float(config_default_scratch['Y2']), self._get_beam_nb_cpi()).tolist()
-                    self._set_y2(y2)
+# ++ Applicator
+            if self._get_radiation_type() == "electron":
+                if config["APPLICATOR"] == "auto":
+                    config["APPLICATOR"] = config_default_scratch["APPLICATOR"]
+                    self._set_applicator(config_default_scratch["APPLICATOR"])
+                else:
+                    self._set_applicator(config["APPLICATOR"])
+                Gammora_print._title2("Applicator : " + str(self._get_applicator()))
+# ++ Insert
+                a=[]
+                i=0
 
-            else:
-                if self._get_split_type() == 'stat':
-                    y2=np.repeat(float(config['Y2']), self._get_nb_index()).tolist()
-                    self._set_y2(y2)
-                if self._get_split_type() == 'dyn':
-                    y2=np.repeat(float(config['Y2']), self._get_beam_nb_cpi()).tolist()
-                    self._set_y2(y2)
+                if config["INSERT"] == "auto":
+                    config["INSERT"] = config_default_scratch["INSERT"]
+                    
+                for val in list(config['INSERT'].split()): 
+                    if i ==0:
+                        a.append(str(val))
+                    else:
+                        a.append(float(val))
+                        i=i+1
+                
+                self._set_insert_type(a[0])
+
+                Gammora_print._title2("Insert Shape : " + str(self._get_insert_type()))
+                if self._get_insert_type() == 'square':
+                    b=[]
+                    b.append(float(a[1]))
+                    b.append(float(a[2]))
+                    self._set_insert_size(b)
+                    Gammora_print._title2("Insert Size : " + str(self._get_insert_size()[0])+ "x" + str(self._get_insert_size()[1]) + " (x,y in cm)" )
+
+                if self._get_insert_type() == 'circle':
+                    self._set_insert_size(float(a[1]))
+                    Gammora_print._title2("Insert Size : " + str(self._get_insert_size()) + " (diameter in cm)")
+
+# ++ Jaws   
+            if self._get_radiation_type() == "photon":
+# +++ X1    
+                if config['X1'] == 'auto':
+                    if self._get_split_type() == 'stat': 
+                        x1=np.repeat(float(config_default_scratch['X1']), self._get_nb_index()).tolist()
+                        self._set_x1(x1)
+                    if self._get_split_type() == 'dyn':
+                        x1=np.repeat(float(config_default_scratch['X1']), self._get_beam_nb_cpi()).tolist()
+                        self._set_x1(x1)
+
+                else:
+                    if self._get_split_type() == 'stat':
+                        x1=np.repeat(float(config['X1']), self._get_nb_index()).tolist()
+                        self._set_x1(x1)
+                    if self._get_split_type() == 'dyn':
+                        x1=np.repeat(float(config['X1']), self._get_beam_nb_cpi()).tolist()
+                        self._set_x1(x1)
+                
+                Gammora_print._title2("X1 Position : " + str(self._get_x1()[0]) + " mm")
+    # +++ X2           
+                if config['X2'] == 'auto': 
+                    if self._get_split_type() == 'stat':
+                        x2=np.repeat(float(config_default_scratch['X2']), self._get_nb_index()).tolist()
+                        self._set_x2(x2)  
+                    if self._get_split_type() == 'dyn':
+                        x2=np.repeat(float(config_default_scratch['X2']), self._get_beam_nb_cpi()).tolist()
+                        self._set_x2(x2)  
+                                        
+                else:
+                    if self._get_split_type() == 'stat':
+                        x2=np.repeat(float(config['X2']), self._get_nb_index()).tolist()
+                        self._set_x2(x2)
+                    if self._get_split_type() == 'dyn':
+                        x2=np.repeat(float(config['X2']), self._get_nb_index()).tolist()
+                        self._set_x2(x2)
+                
+                Gammora_print._title2("X2 Position : "+ str(self._get_x2()[0])+ " mm")
+    # +++ Y1           
+                if config['Y1'] == 'auto': 
+                    if self._get_split_type() == 'stat':
+                        y1=np.repeat(float(config_default_scratch['Y1']), self._get_nb_index()).tolist()
+                        self._set_y1(y1)  
+                    if self._get_split_type() == 'dyn':
+                        y1=np.repeat(float(config_default_scratch['Y1']), self._get_beam_nb_cpi()).tolist()
+                        self._set_y1(y1)                         
+                else:
+                    if self._get_split_type() == 'stat':
+                        y1=np.repeat(float(config['Y1']), self._get_nb_index()).tolist()
+                        self._set_y1(y1)
+                    if self._get_split_type() == 'dyn':
+                        y1=np.repeat(float(config['Y1']), self._get_beam_nb_cpi()).tolist()
+                        self._set_y1(y1)
+                
+                Gammora_print._title2("Y1 Position : "+ str(self._get_y1()[0])+ " mm")
+    # +++ Y2        
+                if config['Y2'] == 'auto': 
+                    if self._get_split_type() == 'stat':
+                        y2=np.repeat(float(config_default_scratch['Y2']), self._get_nb_index()).tolist()
+                        self._set_y2(y2)
+                    if self._get_split_type() == 'dyn':
+                        y2=np.repeat(float(config_default_scratch['Y2']), self._get_beam_nb_cpi()).tolist()
+                        self._set_y2(y2)
+
+                else:
+                    if self._get_split_type() == 'stat':
+                        y2=np.repeat(float(config['Y2']), self._get_nb_index()).tolist()
+                        self._set_y2(y2)
+                    if self._get_split_type() == 'dyn':
+                        y2=np.repeat(float(config['Y2']), self._get_beam_nb_cpi()).tolist()
+                        self._set_y2(y2)
+                
+                Gammora_print._title2("Y2 Position : " + str(self._get_y2()[0])+ " mm")
             
-            Gammora_print._title2("Y2 Position : " + str(self._get_y2()[0])+ " mm")
+            elif self._get_radiation_type() == 'electron' :
+# +++ X1 , X2, Y1, Y2
+                data_applicator_jaw = pd.read_csv(root+'/utils/electon_table/applicator_jaw_data.csv')
+                x_aperture = data_applicator_jaw['jaw'][(data_applicator_jaw['applicator'] == config["APPLICATOR"]) & (data_applicator_jaw['energy'] == config['ENERGY'])].to_list()[0]      
+                y_aperture = x_aperture
+                x1=np.repeat(float(x_aperture), self._get_nb_index()).tolist()
+                x2=np.repeat(float(x_aperture), self._get_nb_index()).tolist()
+                y1=np.repeat(float(y_aperture), self._get_nb_index()).tolist()
+                y2=np.repeat(float(y_aperture), self._get_nb_index()).tolist()
+                self._set_x1(x1)
+                self._set_x2(x2)
+                self._set_y1(y1)
+                self._set_y2(y2)
+
+                Gammora_print._title2("X1 Position : " + str(self._get_x1()[0])+ " mm")
+                Gammora_print._title2("X2 Position : " + str(self._get_x2()[0])+ " mm")
+                Gammora_print._title2("Y1 Position : " + str(self._get_y1()[0])+ " mm")
+                Gammora_print._title2("Y2 Position : " + str(self._get_y2()[0])+ " mm")
+                
 
 # ++ MLC
             if config['MLC'] == 'auto':

@@ -545,6 +545,40 @@ class GammoraSimu():
                 fy1.write("\n")
                 fy2.write("\n")
 
+# + Applicator
+
+    def _add_applicator(self, mac_directory, data_directory, exec_dir):
+        with open(mac_directory, 'a') as file:   
+            appli='/control/execute '+ exec_dir +'/applicator.mac'
+            file.write(appli+"\n")
+        shutil.copyfile(UtilsMac+self.Beam._get_applicator()+'.mac',data_directory+'/applicator.mac')
+
+# + Insert
+
+    def _add_insert(self, mac_directory, data_directory, exec_dir):
+        with open(mac_directory, 'a') as file:   
+            appli='/control/execute '+ exec_dir +'/insert.mac'
+            file.write(appli+"\n")
+        if self.Beam._get_insert_type() == 'square':
+            shutil.copyfile(UtilsMac+'Xinsert_square.macX',data_directory+'/insert.mac')
+            file=fileinput.FileInput(data_directory+'/insert.mac', inplace=1)       
+            for line in file:
+                line=line.replace("insertX", str(self.Beam._get_insert_size()[0]*9.5)) # only works for DSP 100 cm at 5 cm from th surface (conv mm + *0.95)
+                line=line.replace("insertY", str(self.Beam._get_insert_size()[1]*9.5)) # only works for DSP 100 cm at 5 cm from th surface (conv mm + *0.95)
+                print(line)           
+            file.close()
+
+        if self.Beam._get_insert_type() == 'circle':
+            shutil.copyfile(UtilsMac+'Xinsert_circle.macX',data_directory+'/insert.mac')
+            file=fileinput.FileInput(data_directory+'/insert.mac', inplace=1)       
+            for line in file:
+                line=line.replace("radius", str(self.Beam._get_insert_size()*9.5)) # only works for DSP 100 cm at 5 cm from th surface (conv mm + *0.95)
+                print(line)           
+            file.close()
+
+        
+
+
 # + Gantry
     
     def _apply_gantry_rot_stat(self, gantValues, mac_directory):
@@ -1559,6 +1593,13 @@ class GammoraPatientSimu(GammoraSimu):
 # ++ Jaws
                 jaws_data=self.Beam._compute_jaws([self.Beam._get_x1()[i], self.Beam._get_x2()[i], self.Beam._get_y1()[i], self.Beam._get_y2()[i]])
                 self._apply_jaws_stat(jaws_data, mac_cpi+'/main.mac')
+# ++ Applicator
+                if self.Beam._get_radiation_type() == 'electron': 
+                    self._decorate(mac_cpi+'/main.mac', 'Applicator')
+                    self._add_applicator(mac_cpi+'/main.mac', self._get_phsp_data_dir(), exec_dir)
+                    self._decorate(mac_cpi+'/main.mac', 'Insert')
+                    self._add_insert(mac_cpi+'/main.mac', self._get_phsp_data_dir(), exec_dir)
+
 # ++ MLC
                 if self.Beam._get_mlc() == True:                                    
                     self._decorate(mac_cpi+'/main.mac', 'MLC position index: '+ str(i))

@@ -281,6 +281,8 @@ class GammoraStudy():
             y2=lines[lines.index("=Y2=\n")+1].rstrip()
             mlc=lines[lines.index("=MLC=\n")+1].rstrip()
             mlc_file=lines[lines.index("=MLC_FILE=\n")+1].rstrip()
+            applicator=lines[lines.index("=APPLICATOR=\n")+1].rstrip()
+            insert=lines[lines.index("=INSERT=\n")+1].rstrip()
             phantom=lines[lines.index("=PHANTOM=\n")+1].rstrip()
             
             phsp_actor=lines[lines.index("=PHSP_ACTOR=\n")+1].rstrip()
@@ -314,6 +316,8 @@ class GammoraStudy():
             config['Y2']=y2
             config['MLC']=mlc
             config['MLC_FILE']=mlc_file
+            config['APPLICATOR']=applicator
+            config['INSERT']=insert
             config['PHANTOM']=phantom
 
             config['PHSP_ACTOR']=phsp_actor
@@ -391,6 +395,11 @@ class GammoraStudy():
                 exit()
 
         if config['SPLIT_TYPE'] == 'auto' or config['SPLIT_TYPE'] == 'stat' or config['SPLIT_TYPE'] == 'dyn':
+
+            # automatic stat splitting if electron
+            if config['ENERGY'] == '6E' or config['ENERGY'] == '9E' or config['ENERGY'] == '12E' or config['ENERGY'] == '18E' :
+                config['SPLIT_TYPE'] = 'stat'
+
             Gammora_print._title2("Split Type : ok")
         else:
             Gammora_print._error_config("Spliting type", config['SPLIT_TYPE'], ["'stat' (for static)", "'dyn' (for dynamic)"])
@@ -409,6 +418,10 @@ class GammoraStudy():
             else:
                 Gammora_print._error_config("Gantry", config['GANTRY'], ["float value in [0-360]", "auto"])
                 exit()
+        
+        # automatic no arc if electron
+        if config['ENERGY'] == '6E' or config['ENERGY'] == '9E' or config['ENERGY'] == '12E' or config['ENERGY'] == '18E' :
+                config['GANTRY_STOP'] = 'X'
 
         if config['GANTRY_STOP'] == 'auto' or config['GANTRY_STOP'] == 'X':
             Gammora_print._title2("Gantry stop : ok")
@@ -501,6 +514,9 @@ class GammoraStudy():
                 exit()
 
         if config['MLC'] == '0' or config['MLC'] == 'auto' or  config['MLC'] == '1' :
+            # automatic no MLC if electron
+            if config['ENERGY'] == '6E' or config['ENERGY'] == '9E' or config['ENERGY'] == '12E' or config['ENERGY'] == '15E'  or config['ENERGY'] == '18E' :
+                config['MLC'] = '0'
             Gammora_print._title2("MLC :    ok")
         else:
                 Gammora_print._error_config("MLC", config['MLC'], ["auto", "0 = no", "1 = yes"])
@@ -523,6 +539,62 @@ class GammoraStudy():
                         Gammora_print._error_config_file_not_found(UtilsMLC+config['MLC_FILE'])
                         exit()
 
+        # applicator if electron beam
+        if config['ENERGY'] == '6E' or config['ENERGY'] == '9E' or config['ENERGY'] == '12E' or config['ENERGY'] == '15E'  or config['ENERGY'] == '18E' :
+            if self._get_from_patient() == True:
+                print('needs to read applicator from patient')
+                exit()
+            if self._get_from_scratch() == True:
+                if config['APPLICATOR'] == 'auto' or config['APPLICATOR'] == 'A6' or config['APPLICATOR'] == 'A10' or config['APPLICATOR'] == 'A15' or config['APPLICATOR'] == 'A20' or config['APPLICATOR'] == 'A25':
+                    Gammora_print._title2("Applicator : ok")
+                else:
+                    Gammora_print._error_config("Applicator", config['APPLICATOR'], ["auto", "A6", "A10","A15","A20", "A25"])
+                    exit()
+
+        # insert if electron beam
+        if config['ENERGY'] == '6E' or config['ENERGY'] == '9E' or config['ENERGY'] == '12E' or config['ENERGY'] == '15E'  or config['ENERGY'] == '18E' :
+            if self._get_from_patient() == True:
+                print('needs to read insert from patient')
+                exit()
+            if self._get_from_scratch() == True:
+                if config['INSERT'] == 'auto' :
+                    Gammora_print._title2("Insert : ok")
+                else :
+                    try:            
+                        for val in list(config['INSERT'].split()): val
+                            #all(isinstance(val,float) for val in list(config['PATIENT_ACTOR_SIZE'].split()))
+                    except ValueError:
+                        Gammora_print._error_config("Insert", config['Insert'], ["auto", "'square x y' (x, y aperture in cm)", "'circle d' (diameter (float) aperture in cm)" ])
+                        exit()
+                    a=[]
+                    i=0
+                    for val in list(config['INSERT'].split()): 
+                        if i ==0:
+                            a.append(str(val))
+                        else:
+                            a.append(float(val))
+                            i=i+1
+                    if a[0] == 'square' or a[0] == 'circle' :
+                        if a[0] == 'square' :
+                            if len(a) !=3:
+                                Gammora_print._error_config("Insert", config['INSERT'], ["auto", "'square x y' (x, y (float) aperture in cm)", "'circle d' (diameter (float) aperture in cm)" ])
+                                exit()
+                            else:
+                                Gammora_print._title2("Insert : ok") 
+
+                        if a[0] == 'circle' :
+                            if len(a) !=2:
+                                Gammora_print._error_config("Insert", config['INSERT'], ["auto", "'square x y' (x, y (float) aperture in cm)", "'circle d' (diameter (float) aperture in cm)" ])
+                                exit()
+                            else :
+                                Gammora_print._title2("Insert : ok")                         
+                    else:
+                        Gammora_print._error_config("insert", config['INSERT'], ["auto", "'square x y' (x, y (float) aperture in cm)", "'circle d' (diameter (float) aperture in cm)" ])
+                        exit()
+
+
+ 
+                      
         
         if config['PHANTOM'] == '0' or config['PHANTOM'] == 'auto' :
             Gammora_print._title2("Phantom : ok")
@@ -659,7 +731,13 @@ class GammoraStudy():
                 exit()
 
         if config['SOURCE'] == '0' or config['SOURCE'] == 'iaea' or config['SOURCE'] == 'gaga' or config['SOURCE'] == 'auto' :
+            
+            # automatic IAEA source if electron
+            if config['ENERGY'] == '6E' or config['ENERGY'] == '9E' or config['ENERGY'] == '12E' or config['ENERGY'] == '18E' :
+                config['SOURCE'] = 'iaea'
+
             Gammora_print._title2("Source:    ok")
+
         elif config['SOURCE'] == 'npy' or config['SOURCE'] == 'root':
             Gammora_print._error_config("Source 'npy' and 'root' to do", config['SOURCE'], ["0 = no", "auto", "iaea", "gaga"])
             exit()
@@ -667,10 +745,10 @@ class GammoraStudy():
             Gammora_print._error_config("Source", config['SOURCE'], ["0 = no", "auto", "iaea", "gaga"])
             exit()
 
-        if config['ENERGY'] == 'auto' or config['ENERGY'] == '6X' or config['ENERGY'] == '10X' or config['ENERGY'] == '6FFF' or config['ENERGY'] == '10FFF' :
+        if config['ENERGY'] == 'auto' or config['ENERGY'] == '6X' or config['ENERGY'] == '10X' or config['ENERGY'] == '6FFF' or config['ENERGY'] == '10FFF' or config['ENERGY'] == '6E' or config['ENERGY'] == '9E' or config['ENERGY'] == '12E' or config['ENERGY'] == '18E' :
             Gammora_print._title2("Energy:    ok")
         else:
-            Gammora_print._error_config("Energy", config['ENERGY'], [ "auto", "6X" , "10X" , "6FFF" , "10FFF"])
+            Gammora_print._error_config("Energy", config['ENERGY'], [ "auto", "6X" , "10X" , "6FFF" , "10FFF", "6E", "9E", "12E", "18E", ])
             exit()
 
         if config['NB_PART'] == 'auto':
