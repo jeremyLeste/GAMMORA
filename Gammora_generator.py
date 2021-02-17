@@ -640,7 +640,10 @@ class GammoraSimu():
                 shutil.copyfile(UtilsPlacements+'precise_'+file+'.placementsXXX',data_directory+'/precise_'+file+'.placements')
             
         #for i in range(0, self._get_nb_index()):
-        self.Beam._compute_mlc_position_fromC(root+ '/temp/'+str(index)+'-'+self._get_simu_name()+'_mlc.mlc')
+        if self.Study._get_from_patient() == True:
+            self.Beam._compute_mlc_position_fromC(root+ '/temp/'+str(index)+'-'+self._get_simu_name()+'_mlc.mlc')
+        if self.Study._get_from_scratch() == True:
+            self.Beam._compute_mlc_position_fromC(root+ '/utils/mlc/'+self.Beam._get_mlc_file())
         Gammora_print._display_working_state("Computing MLC positions "+str(index)+"/"+str(self.Beam._get_beam_nb_cpi()-1))
         for file in list_file:
             shutil.copyfile(UtilsPlacements+'precise_'+file+'.placementsXXX',data_directory+'/precise_'+file+'.placements')

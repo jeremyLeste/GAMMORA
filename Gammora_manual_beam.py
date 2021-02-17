@@ -98,11 +98,15 @@ class GammoraManualBeam(Gammora_beam.GammoraBeam):
 # Path
         self._set_local_output_dir(root+'/output/'+self._get_beam_name())
 
-# + Radiation type 
-        self._set_radiation_type(config['ENERGY'])
+# + Radiation type
+        if config['ENERGY'] == "auto":
+            self._set_radiation_type(config_default_scratch['ENERGY'])
+
+        else:
+            self._set_radiation_type(config['ENERGY'])
         Gammora_print._title2("Radiation Type : " + str(self._get_radiation_type()))
 
-# + Material
+# + Materialc
         self._set_material(True)
         self._set_material_name('TBMaterials.tb')
 
@@ -419,23 +423,29 @@ class GammoraManualBeam(Gammora_beam.GammoraBeam):
             elif config['MLC'] == '1':
                 self._set_mlc(bool(int(config['MLC'])))
             Gammora_print._title2("MLC : " + str(self._get_mlc()))
-
+            
+            # If MLC = True in manual mode works only with a .mlc file
             if self._get_mlc() == True:
                 if config['MLC_FILE'] == 'auto':
+                    self._set_mlc_file(config_default_scratch['MLC_FILE'])
                     mlc=self._read_mlc_file(config_default_scratch['MLC_FILE'])
                 else:
+                    #print('CEST ICI !!')
+                    self._set_mlc_file(config['MLC_FILE'])
                     mlc=self._read_mlc_file(config['MLC_FILE'])
                 
                 self._set_mlc_sequence(mlc)
 
-                if self._get_split_type() == 'dyn':
-                    self._create_mlc_file()
+                # To do 
+                #if self._get_split_type() == 'dyn':
+                    #self._create_mlc_file()
 
                 # To Do check this functiun works fine
                 if self._get_split_type() == 'stat':
                     if len(self._get_mlc_sequence()) < self._get_nb_index():
                         self._interp_geometry()
-                    self._create_mlc_file()
+                    
+                    #self._create_mlc_file()
 
 # ++ Dose Rate
             self._set_dose_rate(np.ones(self._get_beam_nb_cpi()).tolist())  # constant Dose Rate    
@@ -1060,6 +1070,7 @@ class GammoraManualBeam(Gammora_beam.GammoraBeam):
                 if 'Leaf 60B =' in line:
                     i = i+1
             mlc = mlc
+            #print(mlc)
             return(mlc)
 
     #def _compute_mlc_position_fromC(self, file):
@@ -1071,6 +1082,9 @@ class GammoraManualBeam(Gammora_beam.GammoraBeam):
     def _create_mlc_file(self):
         root = os.getcwd()
         for cpi in range(0, len(self._get_mlc_sequence())):
+            
+            
+
             with open(root+ '/temp/'+str(cpi)+'-'+self._get_simu_name()+'_mlc.mlc', 'w') as mlc_file:
                 mlc_file.write('File Rev = H ' + '\n')
                 mlc_file.write('Treatment = ' + 'DYNAMIC' + '\n')

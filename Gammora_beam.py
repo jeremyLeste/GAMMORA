@@ -352,6 +352,17 @@ class GammoraBeam():
 
         self.MLC = a
 
+    def _get_mlc_file(self):
+        return(self.MLC_FILE)
+
+    def _set_mlc_file(self, a):
+        if type(a) != str:
+            print('!!!!!!!!!!!!!!!!!')
+            print("ERROR: Set MLC must be type of bool")
+            print('!!!!!!!!!!!!!!!!!')
+            raise TypeError
+        self.MLC_FILE = a
+
     def _set_mlc_sequence(self, a):
         #print(a)
         if type(a) != list:

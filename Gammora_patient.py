@@ -276,6 +276,7 @@ class Beam():
             self.ControlPointSequence[0]['y_jaw']= [float(val) for val in cps.BeamLimitingDevicePositionSequence[1].LeafJawPositions]
 
             if len(cps.BeamLimitingDevicePositionSequence) > 2:
+                print([float(val) for val in cps.BeamLimitingDevicePositionSequence[2].LeafJawPositions])
                 self.ControlPointSequence[0]['mlc'] = [float(val) for val in cps.BeamLimitingDevicePositionSequence[2].LeafJawPositions]
         return
                         
@@ -321,6 +322,7 @@ class Beam():
         for i in range(0, self._get_nb_cpi()):
             a.append(self.ControlPointSequence[i]['mlc'])
         return(a)
+
     def _get_isocenter(self):
         return(self.IsocenterPosition)
     
